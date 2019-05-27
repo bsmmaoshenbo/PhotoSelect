@@ -1,16 +1,14 @@
 package com.dijkstra.photoselect.adapter;
 
-import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.xiaozhu.xzdz.R;
-import com.xiaozhu.xzdz.bizBase.photo.photoselector.model.PhotoDetailInfo;
-import com.xiaozhu.xzdz.newapp.network.ImageLoader;
-import com.xiaozhu.xzdz.newapp.recycler.ZRecyclerView;
+import com.bumptech.glide.Glide;
+import com.dijkstra.common.BaseRecyclerViewAdapter;
+import com.dijkstra.common.BaseRecyclerViewHolder;
+import com.dijkstra.photoselect.R;
+import com.dijkstra.photoselect.model.PhotoDetailInfo;
 
 import java.io.File;
 
@@ -20,33 +18,24 @@ import java.io.File;
  * @Date: 2018/6/29 20:52
  * @Version: 1.0
  */
-public class PhotoSelectAdapter extends ZRecyclerView.InitListener {
-    private Context mContext;
-    private ZRecyclerView mRecyclerView;
+public class PhotoSelectAdapter extends BaseRecyclerViewAdapter<PhotoDetailInfo> {
 
-    public PhotoSelectAdapter(Context context, ZRecyclerView recyclerView) {
-        mContext = context;
-        mRecyclerView = recyclerView;
+    @Override
+    public int[] initLayouts() {
+        return new int[]{R.layout.gallery_item};
     }
 
     @Override
-    public View getItemView(View parent, int viewType) {
-        return LayoutInflater.from(mContext).inflate(R.layout.gallery_item, (ViewGroup) parent, false);
-    }
+    protected void bindData(BaseRecyclerViewHolder holder, int position, PhotoDetailInfo data) {
+        ImageView imgQueue = holder.getView(R.id.imgQueue);
+        ImageView ivUnselected = holder.getView(R.id.iv_unselected);
+        RelativeLayout imgQueueMultiSelected = holder.getView(R.id.rl_cover);
 
-    @Override
-    public void bindData(ZRecyclerView.ZViewHolder viewHolder, int position) {
-        PhotoDetailInfo itemData = mRecyclerView.getItemByPosition(position);
-
-        ImageView imgQueue = (ImageView) viewHolder.getItemSubView(R.id.imgQueue);
-        ImageView ivUnselected = (ImageView) viewHolder.getItemSubView(R.id.iv_unselected);
-        RelativeLayout imgQueueMultiSelected = (RelativeLayout) viewHolder.getItemSubView(R.id.rl_cover);
-
-        File file = new File(itemData.sdcardPath);
+        File file = new File(data.sdcardPath);
         if (file.exists() && file.isFile()) {
-            ImageLoader.getInstance().load(itemData.sdcardPath, null, true, true).into(imgQueue);
+            Glide.with(holder.itemView.getContext()).load(data.sdcardPath).into(imgQueue);
         }
-        if (itemData.isSeleted) {
+        if (data.isSeleted) {
             ivUnselected.setVisibility(View.GONE);
             imgQueueMultiSelected.setVisibility(View.VISIBLE);
         } else {

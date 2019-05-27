@@ -1,6 +1,7 @@
 package com.dijkstra.photoselect.fragment;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,8 +15,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.dijkstra.common.BaseRecyclerViewAdapter;
+import com.dijkstra.common.CommonRecyclerView;
+import com.dijkstra.photoselect.DisplayUtil;
+import com.dijkstra.photoselect.DividerGridItemDecoration;
 import com.dijkstra.photoselect.R;
+import com.dijkstra.photoselect.activity.PhotoAlbumActivity;
+import com.dijkstra.photoselect.adapter.PhotoSelectAdapter;
 import com.dijkstra.photoselect.model.PhotoDetailInfo;
 import com.dijkstra.photoselect.model.PhotoSelectInfo;
 
@@ -31,9 +39,9 @@ import static android.app.Activity.RESULT_OK;
  * @Date: 2018/8/16 15:04
  * @Version: 1.0
  */
-public class PhotoSelectFragment extends Fragment implements View.OnClickListener, ZRecyclerView.OnItemClickListener {
+public class PhotoSelectFragment extends Fragment implements View.OnClickListener {
 
-    private ZRecyclerView mRecycleViewImage;
+    private CommonRecyclerView mRecycleViewImage;
     private ImageView mImgNoMedia;
     private TextView mBtnGalleryOk;
     private LinearLayout mActionBarWidgetBack;
@@ -46,6 +54,8 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
     private int mCanPickNum;//可选择图片数量,默认10张
     private PhotoSelectInfo mPhotoSelectInfo;//图片总量
     private int mPosition;//相册列表位置
+
+    private PhotoSelectAdapter mAdapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,10 +111,15 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 4);
         mRecycleViewImage.setLayoutManager(manager);
         if (getActivity() != null) {
-            mRecycleViewImage.addItemDecoration(new DividerGridItemDecoration(Utils.dp2px(getActivity(), 3), Utils.dp2px(getActivity(), 3), ContextCompat.getColor(getActivity(), R.color.xz_ffffff)));
+            mRecycleViewImage.addItemDecoration(new DividerGridItemDecoration(DisplayUtil.dp2px(getActivity(), 3), DisplayUtil.dp2px(getActivity(), 3), ContextCompat.getColor(getActivity(), R.color.xz_ffffff)))
+            ;
         }
-        PhotoSelectAdapter adapter = new PhotoSelectAdapter(getActivity(), mRecycleViewImage);
-        mRecycleViewImage.noSpring().initBind(adapter);
+        mAdapter = new PhotoSelectAdapter();
+        mRecycleViewImage.setOnNestedScrollingEnabled(false)
+                .noSpring()
+                .setListType(CommonRecyclerView.LIST_TYPE_NORMAL)
+                .setOrientation(CommonRecyclerView.VERTICAL)
+                .setAdapter(adapter);
 
         if (mPhotoSelectInfo == null || mPhotoSelectInfo.getAllPictureList() == null || mPhotoSelectInfo.getAllPictureList().size() == 0) {
             mRlPhotoContainer.setVisibility(View.GONE);
@@ -117,7 +132,7 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
                     mPhotoSelectInfo.modifyAllPictureList4Selected(mSelectedList);
                 }
                 previewAndSure(mPhotoSelectInfo);
-                mRecycleViewImage.refresh(mPhotoSelectInfo.getAllPictureList(), false);
+                mAdapter.setData(mPhotoSelectInfo.getAllPictureList());
                 mImgNoMedia.setVisibility(View.VISIBLE);
             }
         }
@@ -138,7 +153,7 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
             mBtnGalleryOk.setText("上传");
             mCommentPhotosPreview.setEnabled(false);
             if (getActivity() != null && isAdded()) {
-                mCommentPhotosPreview.setTextColor(getResources().getColor(R.color.xz_bdbdbd));
+                mCommentPhotosPreview.setTextColor(Color.parseColor("#bdbdbd"));
             }
             mBtnGalleryOk.setBackgroundResource(R.drawable.picture_select_gray);
         } else {
@@ -150,7 +165,7 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
             mBtnGalleryOk.setEnabled(true);
             mCommentPhotosPreview.setEnabled(true);
             if (getActivity() != null && isAdded()) {
-                mCommentPhotosPreview.setTextColor(getResources().getColor(R.color.xz_ff4081));
+                mCommentPhotosPreview.setTextColor(Color.parseColor("#ff4081"));
             }
             mBtnGalleryOk.setBackgroundResource(R.drawable.picture_select_red);
         }
@@ -159,7 +174,27 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
     private void initListener() {
         mActionBarWidgetBack.setOnClickListener(this);
         mActionBarWidgetMoreText.setOnClickListener(this);
-        mRecycleViewImage.setOnItemClickListener(this);
+        mAdapter.setOnItemClickListener(new BaseRecyclerViewAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClickListener(View v, int position) {
+                //条目点击事件
+
+                int selectedSize = 0;
+                if (mPhotoSelectInfo.getSelectdPictureList() != null) {
+                    selectedSize = mPhotoSelectInfo.getSelectdPictureList().size();
+                }
+                PhotoDetailInfo detailInfo = mPhotoSelectInfo.getAllPictureList().get(position);
+                if (mCanPickNum == PhotoAlbumActivity.NO_LIMIT_NUM
+                        || selectedSize < mCanPickNum
+                        || detailInfo.isSeleted) {
+                    detailInfo.isSeleted = !detailInfo.isSeleted;\
+                    mAdapter.notifyItemChanged(position);
+                } else {
+                    Toast.makeText(getActivity(), "最多能选" + mCanPickNum + "张图片", Toast.LENGTH_SHORT).show();
+                }
+                previewAndSure(mPhotoSelectInfo);
+            }
+        });
         mBtnGalleryOk.setOnClickListener(this);
         mCommentPhotosPreview.setOnClickListener(this);
     }
@@ -205,7 +240,7 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
                     getActivity().overridePendingTransition(R.anim.enter_left_right, R.anim.exit_left_right);
                 }
             } else {
-                ToastUtils.show("请先选择图片");
+                Toast.makeText(getActivity(), "请先选择图片", Toast.LENGTH_SHORT).show();
             }
 
         } else if (i == R.id.comment_photos_preview) {//预览
@@ -235,7 +270,7 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
                         })
                         .show(getActivity());
             } else {
-                ToastUtils.show("请先选择图片");
+                Toast.makeText(getActivity(), "请先选择图片", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -256,7 +291,7 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
             detailInfo.isSeleted = !detailInfo.isSeleted;
             mRecycleViewImage.updateItem(position, detailInfo);
         } else {
-            ToastUtils.show("最多能选" + mCanPickNum + "张图片");
+            Toast.makeText(getActivity(), "最多能选" + mCanPickNum + "张图片", Toast.LENGTH_SHORT).show();
         }
         previewAndSure(mPhotoSelectInfo);
     }
