@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.dijkstra.common.BaseRecyclerViewAdapter;
 import com.dijkstra.common.CommonRecyclerView;
+import com.dijkstra.photoselect.Constant;
 import com.dijkstra.photoselect.DisplayUtil;
 import com.dijkstra.photoselect.DividerGridItemDecoration;
 import com.dijkstra.photoselect.R;
@@ -71,7 +72,7 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
             mCanPickNum = bundle.getInt("canPickNum", -1);
             mPosition = bundle.getInt("position", -1);
         }
-        mPhotoSelectInfo = (PhotoSelectInfo) SystemContext.get("photoAlbum");
+        mPhotoSelectInfo = (PhotoSelectInfo) Constant.mContextMap.get("photoAlbum");
     }
 
 
@@ -111,15 +112,14 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
         GridLayoutManager manager = new GridLayoutManager(getActivity(), 4);
         mRecycleViewImage.setLayoutManager(manager);
         if (getActivity() != null) {
-            mRecycleViewImage.addItemDecoration(new DividerGridItemDecoration(DisplayUtil.dp2px(getActivity(), 3), DisplayUtil.dp2px(getActivity(), 3), ContextCompat.getColor(getActivity(), R.color.xz_ffffff)))
-            ;
+            mRecycleViewImage.addItemDecoration(new DividerGridItemDecoration(DisplayUtil.dp2px(getActivity(), 3), DisplayUtil.dp2px(getActivity(), 3), ContextCompat.getColor(getActivity(), R.color.ffffff)));
         }
         mAdapter = new PhotoSelectAdapter();
         mRecycleViewImage.setOnNestedScrollingEnabled(false)
                 .noSpring()
                 .setListType(CommonRecyclerView.LIST_TYPE_NORMAL)
                 .setOrientation(CommonRecyclerView.VERTICAL)
-                .setAdapter(adapter);
+                .setAdapter(mAdapter);
 
         if (mPhotoSelectInfo == null || mPhotoSelectInfo.getAllPictureList() == null || mPhotoSelectInfo.getAllPictureList().size() == 0) {
             mRlPhotoContainer.setVisibility(View.GONE);
@@ -187,7 +187,7 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
                 if (mCanPickNum == PhotoAlbumActivity.NO_LIMIT_NUM
                         || selectedSize < mCanPickNum
                         || detailInfo.isSeleted) {
-                    detailInfo.isSeleted = !detailInfo.isSeleted;\
+                    detailInfo.isSeleted = !detailInfo.isSeleted;
                     mAdapter.notifyItemChanged(position);
                 } else {
                     Toast.makeText(getActivity(), "最多能选" + mCanPickNum + "张图片", Toast.LENGTH_SHORT).show();
@@ -246,54 +246,34 @@ public class PhotoSelectFragment extends Fragment implements View.OnClickListene
         } else if (i == R.id.comment_photos_preview) {//预览
             if (mPhotoSelectInfo.getSelectdPictureList().size() > 0) {
                 mPhotoSelectInfo.setPreviewPicList(mPhotoSelectInfo.getSelectdPictureList());
-                PhotoPreviewUtil.start()
-                        .setDataList(mPhotoSelectInfo.getPreviewPicList())
-                        .isZoom(true)
-                        .isCanRemove(true)
-                        .isSingleBack(false)
-                        .setFirstShowPosition(0)
-                        .setOnFinishListener(PhotoAlbumActivity.SELECT_PHOTO_PREVIEW, new OnActivityFinishResultListener() {
-
-                            @Override
-                            public void onActivityForPhotoResult(int requestCode, int resultCode, Intent data) {
-                                if (requestCode == PhotoAlbumActivity.SELECT_PHOTO_PREVIEW) {
-                                    ArrayList<ImageInfoFullScreenDto> previewList = (ArrayList<ImageInfoFullScreenDto>) data.getSerializableExtra(PhotoPreviewUtil.KEY_LIST);
-                                    if (previewList != null) {
-                                        mPhotoSelectInfo.setAllPictureList(mPhotoSelectInfo.getAllPictureList());
-                                        mPhotoSelectInfo.modifyAllPictureList4Preview(previewList);
-                                        //刷新UI
-                                        mRecycleViewImage.refresh(mPhotoSelectInfo.getAllPictureList(), false);
-                                    }
-                                }
-                                previewAndSure(mPhotoSelectInfo);
-                            }
-                        })
-                        .show(getActivity());
+//                PhotoPreviewUtil.start()
+//                        .setDataList(mPhotoSelectInfo.getPreviewPicList())
+//                        .isZoom(true)
+//                        .isCanRemove(true)
+//                        .isSingleBack(false)
+//                        .setFirstShowPosition(0)
+//                        .setOnFinishListener(PhotoAlbumActivity.SELECT_PHOTO_PREVIEW, new OnActivityFinishResultListener() {
+//
+//                            @Override
+//                            public void onActivityForPhotoResult(int requestCode, int resultCode, Intent data) {
+//                                if (requestCode == PhotoAlbumActivity.SELECT_PHOTO_PREVIEW) {
+//                                    ArrayList<ImageInfoFullScreenDto> previewList = (ArrayList<ImageInfoFullScreenDto>) data.getSerializableExtra(PhotoPreviewUtil.KEY_LIST);
+//                                    if (previewList != null) {
+//                                        mPhotoSelectInfo.setAllPictureList(mPhotoSelectInfo.getAllPictureList());
+//                                        mPhotoSelectInfo.modifyAllPictureList4Preview(previewList);
+//                                        //刷新UI
+//                                        mRecycleViewImage.refresh(mPhotoSelectInfo.getAllPictureList(), false);
+//                                    }
+//                                }
+//                                previewAndSure(mPhotoSelectInfo);
+//                            }
+//                        })
+//                        .show(getActivity());
             } else {
                 Toast.makeText(getActivity(), "请先选择图片", Toast.LENGTH_SHORT).show();
             }
 
         }
-    }
-
-    @Override
-    public void onItemClick(View view, int position) {
-        //条目点击事件
-
-        int selectedSize = 0;
-        if (mPhotoSelectInfo.getSelectdPictureList() != null) {
-            selectedSize = mPhotoSelectInfo.getSelectdPictureList().size();
-        }
-        PhotoDetailInfo detailInfo = mRecycleViewImage.getItemByPosition(position);
-        if (mCanPickNum == PhotoAlbumActivity.NO_LIMIT_NUM
-                || selectedSize < mCanPickNum
-                || detailInfo.isSeleted) {
-            detailInfo.isSeleted = !detailInfo.isSeleted;
-            mRecycleViewImage.updateItem(position, detailInfo);
-        } else {
-            Toast.makeText(getActivity(), "最多能选" + mCanPickNum + "张图片", Toast.LENGTH_SHORT).show();
-        }
-        previewAndSure(mPhotoSelectInfo);
     }
 
     @Override

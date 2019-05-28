@@ -20,6 +20,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.PhotoAlbumActivity" />
+        <activity
+            android:name=".MyDialogActivity"
+            android:theme="@style/MyDialogStyleBottom" />
     </application>
 
 </manifest>

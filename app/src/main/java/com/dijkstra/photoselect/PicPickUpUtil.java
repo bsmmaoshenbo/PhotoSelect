@@ -1,6 +1,16 @@
 package com.dijkstra.photoselect;
 
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.Intent;
+import android.os.Bundle;
 import android.os.Environment;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dijkstra.photoselect.activity.PhotoAlbumActivity;
@@ -183,4 +193,56 @@ public class PicPickUpUtil {
 
         void onTakePhotoResult(PhotoDetailInfo picture);
     }
+
+    public static void showDialog(final Activity activity, final ArrayList<PhotoDetailInfo> selectedList, final int canPickNum, final PicPickCallBack callBack) {
+        if (selectedList != null && selectedList.size() >= canPickNum) {
+            Toast.makeText(activity, "最多可选择%d张", canPickNum);
+            return;
+        }
+
+        Dialog dialog = new Dialog(activity, R.style.ActionSheetDialogStyle);
+        //填充对话框的布局
+        View v = LayoutInflater.from(activity).inflate(R.layout.dialog_select_photo, null);
+        //初始化控件
+        TextView choosePhoto = v.findViewById(R.id.choosePhoto);
+        TextView takePhoto = v.findViewById(R.id.takePhoto);
+        choosePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //相册
+                Intent intent = new Intent(activity, PhotoAlbumActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt("canPickNum", canPickNum);
+                if (selectedList != null && selectedList.size() > 0) {
+                    bundle.putSerializable("selected_picture", selectedList);
+                }
+                intent.putExtras(bundle);
+                if (callBack != null) {
+//                    callBack.onPickPicFromAlbum();
+                }
+            }
+        });
+        takePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (callBack != null) {
+//                    callBack.onTakePhotoResult();
+                }
+            }
+        });
+        //将布局设置给Dialog
+        dialog.setContentView(v);
+        //获取当前Activity所在的窗体
+        Window dialogWindow = dialog.getWindow();
+        //设置Dialog从窗体底部弹出
+        dialogWindow.setGravity(Gravity.BOTTOM);
+        //获得窗体的属性
+        WindowManager.LayoutParams lp = dialogWindow.getAttributes();
+        lp.y = 20;//设置Dialog距离底部的距离
+        //    将属性设置给窗体
+        dialogWindow.setAttributes(lp);
+        dialog.show();//显示对话框
+    }
+
+
 }

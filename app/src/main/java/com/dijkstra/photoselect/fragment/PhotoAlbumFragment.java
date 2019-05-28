@@ -1,6 +1,5 @@
 package com.dijkstra.photoselect.fragment;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,14 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.dijkstra.photoselect.Constant;
 import com.dijkstra.photoselect.R;
 import com.dijkstra.photoselect.activity.PhotoAlbumActivity;
 import com.dijkstra.photoselect.adapter.PhotoAlbumAdapter;
 import com.dijkstra.photoselect.callback.TransitionCallback;
-import com.dijkstra.photoselect.manager.AlbumScannerManager;
 import com.dijkstra.photoselect.manager.PhotoAlbumItemDecoration;
 import com.dijkstra.photoselect.model.PhotoDetailInfo;
 import com.dijkstra.photoselect.model.PhotoSelectInfo;
