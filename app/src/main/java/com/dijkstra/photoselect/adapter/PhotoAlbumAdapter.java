@@ -1,7 +1,6 @@
 package com.dijkstra.photoselect.adapter;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -26,11 +25,9 @@ import java.util.List;
 public class PhotoAlbumAdapter extends RecyclerView.Adapter<PhotoAlbumAdapter.AlbumFolderViewHolder> {
 
     private List<PhotoSelectInfo> mPictureFolders = new ArrayList<>();
-    private final Activity mContext;
     private OnItemClientListener onItemClientListener;
 
-    public PhotoAlbumAdapter(Activity context) {
-        mContext = context;
+    public PhotoAlbumAdapter() {
     }
 
     public void setData(List<PhotoSelectInfo> folders) {

@@ -114,7 +114,7 @@ public class PhotoAlbumFragment extends Fragment implements View.OnClickListener
      * @param mPictureFolders 相册列表
      */
     private void renderUI(final ArrayList<PhotoSelectInfo> mPictureFolders) {
-        PhotoAlbumAdapter photoAlbumAdapter = new PhotoAlbumAdapter(getActivity());
+        PhotoAlbumAdapter photoAlbumAdapter = new PhotoAlbumAdapter();
         photoAlbumAdapter.setData(mPictureFolders);
         mRecycleViewPhotoAlbum.setAdapter(photoAlbumAdapter);
         photoAlbumAdapter.setOnItemClientListener(new PhotoAlbumAdapter.OnItemClientListener() {
